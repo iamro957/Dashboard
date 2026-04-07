@@ -104,9 +104,17 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 <div class="pn" id="p-finance">
 <div class="cd"><div class="ct"><div class="ic" style="background:var(--cynBg);color:var(--cyn)">📊</div>Net Worth & Overview</div>
 <div class="frow"><label>Cash/Savings</label><input class="inp" type="number" id="tB" placeholder="₹ 0" oninput="uF()"></div>
-<div class="frow"><label>Monthly Budget</label><input class="inp" type="number" id="mBd" placeholder="₹ 0" oninput="uF()"></div>
 <div class="frow"><label>Assets Value</label><input class="inp" type="number" id="tA" placeholder="₹ Investments, property..." oninput="uF()"></div>
 <div class="fg" id="fBx"></div></div>
+<div class="cd"><div class="ct"><div class="ic" style="background:var(--accBg);color:var(--acc)">🔄</div>Fixed Monthly Costs (set once, stays forever)</div>
+<div style="font-size:10px;color:var(--t3);margin-bottom:8px">Software, rent, subscriptions, phone, gym, etc. EMIs are auto added from loans below.</div>
+<div id="recL"></div>
+<div class="fad">
+<input class="inp" id="rcN" placeholder="Name (Claude Pro, Rent...)" style="flex:2">
+<input class="inp" id="rcA" type="number" placeholder="₹ /month" style="flex:1">
+<select class="sl2" id="rcC"><option>Software</option><option>Rent</option><option>Subscription</option><option>Insurance</option><option>Phone/Internet</option><option>Gym</option><option>Other Fixed</option></select>
+<button class="btn" onclick="aRc()">Add</button>
+</div></div>
 <div class="cd"><div class="ct"><div class="ic" style="background:var(--redBg);color:var(--red)">🏦</div>Loans, EMIs & Credit Cards</div><div id="lnL"></div>
 <div class="sl" style="margin-top:12px">Add Loan / EMI / CC (only enter what you know)</div>
 <div class="fad">
@@ -167,7 +175,7 @@ localStorage.setItem('ld',TD);localStorage.setItem('lw',WK);localStorage.setItem
 // SYNC
 var dr=false;setInterval(function(){if(dr){dr=false;dSy()}},30000);
 function mSync(){$('sBtn').innerHTML='🔄';$('sBtn').classList.add('sspin');dSy()}
-function dSy(){var en=[];var ks=['hbs','tds','txs','hs','g_w','g_m','g_l','gA','fH','wt','lns','tB','mBd','tA','uN','cur','nt','ld','lw','lm'];ks.forEach(function(k){var v=localStorage.getItem(k);if(v!==null)en.push({key:k,value:v})});
+function dSy(){var en=[];var ks=['hbs','tds','txs','hs','g_w','g_m','g_l','gA','fH','wt','lns','rcs','tB','tA','uN','cur','nt','ld','lw','lm'];ks.forEach(function(k){var v=localStorage.getItem(k);if(v!==null)en.push({key:k,value:v})});
 var tx=L('txs',[]),ln=L('lns',[]),hb=L('hbs',[]),td=L('tds',[]);
 var pl={action:'sync',entries:en,transactions:tx,loans:ln,dailySnap:{date:TD,habitsDone:hb.filter(function(x){return x.done}).length,habitsTotal:hb.length,tasksDone:td.filter(function(x){return x.done}).length,tasksTotal:td.length,water:L('wt',0),income:tx.filter(function(e){return e.date===TD&&e.type==='income'}).reduce(function(s,e){return s+e.amount},0),expenses:tx.filter(function(e){return e.date===TD&&e.type==='expense'}).reduce(function(s,e){return s+e.amount},0),notes:localStorage.getItem('nt')||''}};
 fetch(SU,{method:'POST',body:JSON.stringify(pl),headers:{'Content-Type':'text/plain'}}).then(function(r){return r.json()}).then(function(d){$('sBtn').innerHTML='☁️';$('sBtn').classList.remove('sspin');if(d.status==='ok'){$('sBtn').classList.add('sok');setTimeout(function(){$('sBtn').classList.remove('sok')},1500);$('sSt').textContent='✅ Synced '+new Date().toLocaleTimeString();$('sSt').className='sst ok'}}).catch(function(){$('sBtn').innerHTML='☁️';$('sBtn').classList.remove('sspin');$('sSt').textContent='⚠️ Offline';$('sSt').className='sst er'})}
@@ -201,12 +209,19 @@ function tP(){if(pRn){clearInterval(pIn);pRn=false;$('pB').textContent='Resume';
 function rPm(){clearInterval(pIn);pRn=false;pTm=25*60;rPo();$('pB').textContent='Start';$('pB').classList.remove('on');$('pI').textContent='Focus for 25 min'}
 
 // FINANCE
-var txs=L('txs',[]),lns=L('lns',[]);$('tB').value=localStorage.getItem('tB')||'';$('mBd').value=localStorage.getItem('mBd')||'';$('tA').value=localStorage.getItem('tA')||'';var fFi='all';
-function uF(){localStorage.setItem('tB',$('tB').value);localStorage.setItem('mBd',$('mBd').value);localStorage.setItem('tA',$('tA').value);
-var b=parseFloat($('tB').value)||0,bd=parseFloat($('mBd').value)||0,a=parseFloat($('tA').value)||0;
+var txs=L('txs',[]),lns=L('lns',[]),rcs=L('rcs',[]);$('tB').value=localStorage.getItem('tB')||'';$('tA').value=localStorage.getItem('tA')||'';var fFi='all';
+function uF(){localStorage.setItem('tB',$('tB').value);localStorage.setItem('tA',$('tA').value);
+var b=parseFloat($('tB').value)||0,a=parseFloat($('tA').value)||0;
 var mT=txs.filter(function(e){return e.date&&e.date.slice(0,7)===MO}),mI=mT.filter(function(e){return e.type==='income'}).reduce(function(s,e){return s+e.amount},0),mE=mT.filter(function(e){return e.type==='expense'}).reduce(function(s,e){return s+e.amount},0);
-var nt=mI-mE,tD=lns.reduce(function(s,l){return s+(l.emi*(l.totalM-l.paidM))},0),mEmi=lns.reduce(function(s,l){return s+l.emi},0),nw=b+a-tD,rm=bd>0?bd-mE:b-mE;
-$('fBx').innerHTML='<div class="fb nw"><div class="fl">Net Worth</div><div class="fv" style="color:'+(nw>=0?'var(--cyn)':'var(--red)')+'">'+(nw<0?'−':'')+F(nw)+'</div></div><div class="fb tot"><div class="fl">Cash</div><div class="fv" style="color:var(--text)">'+F(b)+'</div></div><div class="fb inc2"><div class="fl">Income</div><div class="fv" style="color:var(--emr)">+'+F(mI)+'</div></div><div class="fb spt"><div class="fl">Spent</div><div class="fv" style="color:var(--red)">'+F(mE)+'</div></div><div class="fb debt"><div class="fl">Total Debt</div><div class="fv" style="color:var(--red)">'+F(tD)+'</div></div><div class="fb bud"><div class="fl">EMIs/mo</div><div class="fv" style="color:var(--pur)">'+F(mEmi)+'</div></div><div class="fb '+(nt>=0?'net2':'spt')+'"><div class="fl">Net Profit</div><div class="fv" style="color:'+(nt>=0?'var(--blu)':'var(--red)')+'">'+(nt>=0?'+':'−')+F(nt)+'</div></div><div class="fb lft"><div class="fl">Budget Left</div><div class="fv" style="color:'+(rm>=0?'var(--grn)':'var(--red)')+'">'+(rm<0?'−':'')+F(rm)+'</div></div>';dr=true}
+var tD=lns.reduce(function(s,l){return s+(l.emi*(l.totalM-l.paidM))},0),mEmi=lns.reduce(function(s,l){return s+l.emi},0);
+var mRec=rcs.reduce(function(s,r){return s+r.amount},0);
+var fixedTotal=mEmi+mRec;
+var nt=mI-mE,nw=b+a-tD,freeCash=mI-fixedTotal-mE;
+$('fBx').innerHTML='<div class="fb nw"><div class="fl">Net Worth</div><div class="fv" style="color:'+(nw>=0?'var(--cyn)':'var(--red)')+'">'+(nw<0?'−':'')+F(nw)+'</div></div><div class="fb tot"><div class="fl">Cash</div><div class="fv" style="color:var(--text)">'+F(b)+'</div></div><div class="fb inc2"><div class="fl">Income</div><div class="fv" style="color:var(--emr)">+'+F(mI)+'</div></div><div class="fb spt"><div class="fl">Variable Spend</div><div class="fv" style="color:var(--red)">'+F(mE)+'</div></div><div class="fb debt"><div class="fl">Total Debt</div><div class="fv" style="color:var(--red)">'+F(tD)+'</div></div><div class="fb bud"><div class="fl">Fixed Costs/mo</div><div class="fv" style="color:var(--pur)">'+F(fixedTotal)+'</div><div class="fsub">EMIs: '+F(mEmi)+' + Bills: '+F(mRec)+'</div></div><div class="fb '+(nt>=0?'net2':'spt')+'"><div class="fl">Net Profit</div><div class="fv" style="color:'+(nt>=0?'var(--blu)':'var(--red)')+'">'+(nt>=0?'+':'−')+F(nt)+'</div></div><div class="fb '+(freeCash>=0?'lft':'spt')+'"><div class="fl">Free Cash</div><div class="fv" style="color:'+(freeCash>=0?'var(--grn)':'var(--red)')+'">'+(freeCash<0?'−':'')+F(freeCash)+'</div><div class="fsub">After fixed + variable</div></div>';dr=true;rRc()}
+
+// RECURRING/FIXED EXPENSES
+function rRc(){var el=$('recL');el.innerHTML='';rcs.forEach(function(r,i){var d=document.createElement('div');d.className='fi';d.innerHTML='<span class="fn">'+E(r.name)+'</span><span class="fc">'+r.category+'</span><span class="fa neg">'+F(r.amount)+'/mo</span><button class="frm" onclick="rcs.splice('+i+',1);S(\'rcs\',rcs);uF()">×</button>';el.appendChild(d)})}
+function aRc(){var n=$('rcN').value.trim(),a=parseFloat($('rcA').value)||0,c=$('rcC').value;if(!n||!a)return;rcs.push({name:n,amount:a,category:c});S('rcs',rcs);$('rcN').value='';$('rcA').value='';uF()}
 
 // LOANS: only EMI + total months + months paid = auto calc outstanding
 function rLn(){var el=$('lnL');el.innerHTML='';lns.forEach(function(l,i){var outstanding=l.emi*(l.totalM-l.paidM);var pct=l.totalM>0?Math.round(l.paidM/l.totalM*100):0;var circ=2*Math.PI*18;
@@ -271,6 +286,6 @@ $('moF').innerHTML=Object.keys(ct2).length?Object.entries(ct2).sort(function(a,b
 function sD(dk){var h=L('hs',{});var sn=h[dk];var el=$('dDt');var dl=new Date(dk+'T00:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long'});if(!sn){el.innerHTML='<div class="dd2"><h4>'+dl+'</h4><p style="color:var(--t3)">No data.</p></div>';return}var x='<div class="dd2"><h4>'+dl+'</h4>';if(sn.h&&sn.h.length){x+='<div style="margin-bottom:4px;font-weight:500">Habits: '+sn.h.filter(function(v){return v.d}).length+'/'+sn.h.length+'</div>';sn.h.forEach(function(v){x+='<div>'+(v.d?'✅':'⬜')+' '+E(v.n)+'</div>'})}if(sn.w)x+='<div style="margin-top:4px">💧 '+sn.w+'/8</div>';if(sn.t&&sn.t.length){x+='<div style="margin-top:6px;font-weight:500">Tasks:</div>';sn.t.forEach(function(v){x+='<div>'+(v.d?'✅':'⬜')+' '+E(v.x)+'</div>'})}if(sn.tx&&sn.tx.length){var ic=sn.tx.filter(function(e){return e.type==='income'}),ex=sn.tx.filter(function(e){return e.type==='expense'});if(ic.length){x+='<div style="margin-top:6px;font-weight:500;color:var(--grn)">Income:</div>';ic.forEach(function(e){x+='<div>💵 '+E(e.client||e.name)+' +'+F(e.amount)+'</div>'})}if(ex.length){x+='<div style="margin-top:4px;font-weight:500;color:var(--red)">Expenses:</div>';ex.forEach(function(e){x+='<div>'+E(e.name)+' '+F(e.amount)+'</div>'})}}if(sn.nt)x+='<div style="margin-top:6px;font-weight:500">Notes:</div><div style="white-space:pre-wrap;color:var(--t2)">'+E(sn.nt)+'</div>';x+='</div>';el.innerHTML=x}
 function exD(){var d={};for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);d[k]=localStorage.getItem(k)}var b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='lifeos-'+TD+'.json';a.click()}
 function imD(ev){var f=ev.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);if(confirm('Replace?')){localStorage.clear();Object.entries(d).forEach(function(x){localStorage.setItem(x[0],x[1])});location.reload()}}catch(err){alert('Bad file.')}};r.readAsText(f);ev.target.value=''}
-rHb();rWt();rTd();rG2('w');rG2('m');rG2('l');rTx();uF();rCh();rLn();rDP();rPo();setTimeout(dSy,5000);
+rHb();rWt();rTd();rG2('w');rG2('m');rG2('l');rTx();uF();rRc();rCh();rLn();rDP();rPo();setTimeout(dSy,5000);
 </script>
 </body></html>
