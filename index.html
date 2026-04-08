@@ -113,11 +113,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 
 <div class="c">
 <div class="ct"><div class="ic" style="background:var(--acB);color:var(--ac)">🎯</div>Goals</div>
-<div class="lb" style="margin-top:0">Today</div>
-<div id="dG"></div>
-<div class="ar"><input class="inp" id="dgI" placeholder="Today's goal..." onkeypress="if(event.key==='Enter')aG('d')"><button class="btn" onclick="aG('d')">Add</button></div>
-<div class="sep"></div>
-<div class="lb">This Week <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)" id="wkL"></span></div>
+<div class="lb" style="margin-top:0">This Week <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)" id="wkL"></span></div>
 <div id="wG"></div>
 <div class="ar"><input class="inp" id="wgI" placeholder="Weekly goal..." onkeypress="if(event.key==='Enter')aG('w')" style="flex:2"><select class="sl" id="wgC"><option value="work">Work</option><option value="health">Health</option><option value="finance">Finance</option><option value="personal">Personal</option></select><button class="btn" onclick="aG('w')">Add</button></div>
 <div class="pb" style="margin-top:6px"><div class="pbt"><div class="pbf" id="wPb" style="width:0%;background:var(--bl)"></div></div><div class="pbl" id="wPl" style="color:var(--bl)">0%</div></div>
@@ -409,13 +405,13 @@ document.addEventListener('keydown',function(e){if(e.altKey&&['1','2','3','4','5
 autoOverdue();setInterval(function(){dayRollover()},60000);
 function rAll(){try{$('tB').value=localStorage.getItem('tBStart')||'';$('tA').value=localStorage.getItem('tA')||'';$('iT').value=localStorage.getItem('iT')||'';$('uN').value=localStorage.getItem('uN')||'';$('cS').value=localStorage.getItem('cur')||'₹';$('nt').value=localStorage.getItem('nt')||''}catch(e){}
 hbs=L('hbs',[]);tds=L('tds',[]);txs=L('txs',[]);lns=L('lns',[]);rcs=L('rcs',[]);rcts=L('rcts',[]);cls=L('cls',[]);sgs=L('sgs',[]);rds=L('rds',[]);orSecs=L('orSecs',[]);orLog=L('orLog',[]);
-rHb();rWt();rMd();rTd();rRcT();rG2('d');rG2('w');rG2('m');rTx();uF();rRc();rCh();rLn();rDP();rCl();rSg();rRd();rOr();rOrDay();rGl();sGt();
+rHb();rWt();rMd();rTd();rRcT();rG2('w');rG2('m');rTx();uF();rRc();rCh();rLn();rDP();rCl();rSg();rRd();rOr();rOrDay();rGl();sGt();
 if(typeof rHs==='function'){try{rHs()}catch(e){}}}
 function showSignInModal(){var o=$('fbOverlay');if(o)o.style.display='flex';var c=$('fbConnecting');if(c)c.style.display='none';var s=$('fbSignIn');if(s)s.style.display='block'}
 function hideFbOverlay(){var o=$('fbOverlay');if(o)o.style.display='none'}
 function siDo(create){var e=$('siEmail').value.trim(),p=$('siPass').value;var er=$('siErr');er.textContent='';if(!e||!p){er.textContent='Enter email and password';return}var fn=create?'createUserWithEmailAndPassword':'signInWithEmailAndPassword';fbAuth[fn](e,p).catch(function(err){er.textContent=err.message})}
 function fbSignOut(){if(confirm('Sign out? Local data stays on this device; it will re-sync when you sign in again.'))fbAuth.signOut().then(function(){location.reload()})}
 function fbBoot(){fbAuth.onAuthStateChanged(function(user){if(!user){showSignInModal();return}var c=$('fbConnecting');if(c){c.style.display='block';c.querySelector('div:last-child').textContent='Loading your data…'}var s=$('fbSignIn');if(s)s.style.display='none';var o=$('fbOverlay');if(o)o.style.display='flex';var ae=$('accEmail');if(ae)ae.textContent=user.email||'';fbDb.collection('users').doc(user.uid).collection('state').doc('main').get().then(function(snap){if(snap.exists&&snap.data().entries){var e=snap.data().entries;Object.keys(e).forEach(function(k){localStorage.setItem(k,e[k])})}_fbInitDone=true;if(!snap.exists||!snap.data().entries){fbPush()}hideFbOverlay();try{rAll()}catch(e){}fbAttachListener()}).catch(function(err){hideFbOverlay();_fbInitDone=true;showToast('Offline mode — changes will sync when online','warn');try{rAll()}catch(e){}})})}
-rHb();rWt();rMd();rTd();rRcT();rG2('d');rG2('w');rG2('m');rTx();uF();rRc();rCh();rLn();rDP();rCl();rSg();rRd();rOr();rOrDay();rGl();
+rHb();rWt();rMd();rTd();rRcT();rG2('w');rG2('m');rTx();uF();rRc();rCh();rLn();rDP();rCl();rSg();rRd();rOr();rOrDay();rGl();
 fbBoot();
 </script></body></html>
