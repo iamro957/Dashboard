@@ -1,0 +1,56 @@
+# Lead scraper configuration. Edit freely — every value is overridable from the
+# GitHub Actions "Run workflow" form, so commit-time defaults below are just
+# sensible starting points.
+
+# Apify actor that scrapes the Facebook / Meta Ads Library. The default is the
+# most popular public actor; swap if you prefer another (e.g.
+# apify/facebook-ads-library-scraper). Use the username/actor-name form.
+apify_actor_id: curious_coder/facebook-ads-library-scraper
+
+# Paste the ID portion of your Google Sheet URL here, e.g.
+# https://docs.google.com/spreadsheets/d/<THIS_PART>/edit
+google_sheet_id: REPLACE_WITH_YOUR_SHEET_ID
+
+# Worksheet/tab name inside the sheet. Created automatically if it doesn't exist.
+google_sheet_tab: Qualified Leads
+
+# How many ads to pull per (keyword × country) query. 50 is a good balance of
+# coverage vs. Apify compute units. Raise if you want a wider top-of-funnel.
+count_per_query: 50
+
+# Tier-1 English-speaking markets.
+countries:
+  - US
+  - GB
+  - CA
+  - AU
+  - IE
+  - NZ
+
+# Search phrases used against the Ads Library. These are tuned for info-product
+# / coach / consultant lead-gen funnels. Add, remove, or replace as you learn
+# what converts.
+keywords:
+  - life coach
+  - business coach
+  - mindset coach
+  - executive coach
+  - high-ticket coach
+  - online course
+  - masterclass
+  - free training
+  - free webinar
+  - cohort
+  - consulting
+  - fractional
+  - done-for-you
+  - online business
+  - transformation
+  - lead generation
+
+# The qualification gate. Only pages whose active-ad count falls inside this
+# range are written to the sheet. 10–50 is the "real spend, still scaling"
+# Goldilocks zone for info-product operators.
+qualification:
+  min_active_ads: 10
+  max_active_ads: 50

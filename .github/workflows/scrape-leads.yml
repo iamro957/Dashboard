@@ -1,0 +1,54 @@
+name: Scrape Qualified Leads
+
+on:
+  workflow_dispatch:
+    inputs:
+      keywords:
+        description: "Comma-separated keywords (leave blank to use config.yaml defaults)"
+        required: false
+        type: string
+      countries:
+        description: "Comma-separated ISO country codes, e.g. US,GB,CA (blank = config defaults)"
+        required: false
+        type: string
+      min_ads:
+        description: "Minimum active ads to qualify (blank = config default)"
+        required: false
+        type: string
+      max_ads:
+        description: "Maximum active ads to qualify (blank = config default)"
+        required: false
+        type: string
+  # To turn on a weekly cron, uncomment the block below. Cron is UTC.
+  # schedule:
+  #   - cron: "0 6 * * 1"
+
+concurrency:
+  group: scrape-leads
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r scraper/requirements.txt
+
+      - name: Run scraper
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          KEYWORDS_OVERRIDE: ${{ inputs.keywords }}
+          COUNTRIES_OVERRIDE: ${{ inputs.countries }}
+          MIN_ADS_OVERRIDE: ${{ inputs.min_ads }}
+          MAX_ADS_OVERRIDE: ${{ inputs.max_ads }}
+        run: python scraper/run.py
